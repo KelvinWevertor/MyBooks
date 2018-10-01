@@ -1,77 +1,156 @@
 package br.com.senaijandira.mybooks;
 
+import android.arch.persistence.room.Room;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+
+import br.com.senaijandira.mybooks.db.MyBooksDatabase;
 import br.com.senaijandira.mybooks.model.Livro;
+
+
 
 public class MainActivity extends AppCompatActivity {
 
-    LinearLayout listaLivros;
+    //ListVew que carregará os livros
+    ListView lstViewLivros;
 
     public static Livro[] livros;
+
+    //Variavel de acesso ao Banco
+    private MyBooksDatabase myBooksDb;
+
+    //Adapter para criar a lista de livros
+    LivroAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        listaLivros = findViewById(R.id.listaLivros);
+        //Criando a instancia do banco de dados
+        myBooksDb = Room.databaseBuilder(getApplicationContext(),
+                MyBooksDatabase.class, Utils.DATABASE_NAME)
+                .fallbackToDestructiveMigration()
+                .allowMainThreadQueries()
+                .build();
 
-        //Criar um livro Fake
+        lstViewLivros = findViewById(R.id.lstViewLivros);
 
-        livros = new Livro[]{
-                /*
-                 new Livro( 1,Utils.toByteArray(getResources(), R.drawable.pequeno_principe),
-                         "O pequeno principe", getString(R.string.pequeno_principe) ),
+        //Criar o adapter
+        adapter = new LivroAdapter(this, myBooksDb);
 
-                new Livro( 2,Utils.toByteArray(getResources(), R.drawable.cinquenta_tons_cinza),
-                        "50 tons de cinza", getString(R.string.pequeno_principe) ),
-
-                new Livro( 3,Utils.toByteArray(getResources(), R.drawable.kotlin_android),
-                        "Kothin com android", getString(R.string.pequeno_principe) ),
-                */
-        };
-
+        lstViewLivros.setAdapter(adapter);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
 
-        listaLivros.removeAllViews();
+        //Aqui faz um select no banco
+        livros = myBooksDb.daoLivro().selecionarTodos();
 
-        for(Livro l : livros){
-          criarLivro(l, listaLivros);
-        }
-    }
+        //Limpando a listView
+        adapter.clear();
 
-    public void criarLivro(Livro livro, ViewGroup root){
+        //Adicionando os livros a lista
+        adapter.addAll(livros);
 
-        View v = LayoutInflater.from(this)
-            .inflate(R.layout.livro_layout, root, false);
-
-        ImageView imgLivroCapa =  v.findViewById(R.id.imgLivroCapa);
-        TextView txtLivroTitulo = v.findViewById(R.id.txtLivroTitulo);
-        TextView txtLivroDescricao = v.findViewById(R.id.txtLivroDescricao);
-
-        imgLivroCapa.setImageBitmap(Utils.toBitmap(livro.getCapa()));
-
-        txtLivroTitulo.setText(livro.getTitulo());
-        txtLivroDescricao.setText(livro.getDescricao());
-
-        root.addView(v);
     }
 
     public void abrirCadastro(View v){
-        startActivity(new Intent(this,CadastroActivity.class));
+        startActivity(new Intent(this,
+                CadastroActivity.class));
     }
-}
+    public void leuclick(Livro l){
 
+    }
+
+    public class LivroAdapter extends ArrayAdapter<Livro> {
+
+        //Banco de doados
+        private MyBooksDatabase mybooksDb;
+
+        public LivroAdapter(Context ctx, MyBooksDatabase mybooksDb){
+            super(ctx, 0, new ArrayList<Livro>());
+
+            this.mybooksDb = mybooksDb;
+        }
+
+        private void deletarLivro(Livro livro){
+
+            //Remover do banco de dados
+            mybooksDb.daoLivro().deletar(livro);
+
+            //remover livro lista
+            remove(livro);
+        }
+
+        @NonNull
+        @Override
+        public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+
+            View v = convertView;
+
+            if(v == null){
+                v = LayoutInflater.from(getContext())
+                        .inflate(R.layout.livro_layout,
+                                parent, false);
+            }
+
+            final Livro livro = getItem(position);
+
+            ImageView imgLivroCapa = v.findViewById(R.id.imgLivroCapa);
+            TextView txtLivroTitulo = v.findViewById(R.id.txtLivroTitulo);
+            TextView txtLivroDescricao = v.findViewById(R.id.txtLivroDescricao);
+
+            ImageView imgDeleteLivro = v.findViewById(
+                    R.id.imgapagarLivro);
+
+            imgDeleteLivro.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    deletarLivro(livro);
+                }
+            });
+
+            //Setando a imagem
+            imgLivroCapa.setImageBitmap(
+                    Utils.toBitmap(livro.getCapa()) );
+
+            //Setando o titulo do livro
+            txtLivroTitulo.setText(livro.getTitulo());
+
+            //Setando a descrição do livro
+            txtLivroDescricao.setText(livro.getDescricao());
+
+            final Button btnLeu= v.findViewById(R.id.btnLeu);
+
+            btnLeu.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    System.out.println("vc quer ler o livro "+livro.getTitulo());
+                    abrirCadastro(btnLeu);
+
+                }
+            });
+
+            return v;
+        }
+    }
+
+}

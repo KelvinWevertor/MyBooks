@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="5dp">
 
@@ -8,8 +9,7 @@
         xmlns:card_view="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        card_view:cardCornerRadius="4dp"
-        >
+        card_view:cardCornerRadius="4dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -19,20 +19,23 @@
             <ImageView
                 android:layout_width="100dp"
                 android:layout_height="150dp"
+                android:layout_marginRight="15dp"
                 android:id="@+id/imgLivroCapa"
                 android:src="@drawable/pequeno_principe"
                 />
 
             <LinearLayout
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
+                android:layout_weight="1"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:paddingTop="5dp">
+                android:paddingTop="5dp"
+                >
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="O pequeno principe"
+                    android:text="O Pequeno principe"
                     android:textStyle="bold"
                     android:textSize="18sp"
                     android:id="@+id/txtLivroTitulo"
@@ -47,11 +50,30 @@
 
             </LinearLayout>
 
+
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/apagar"
+                android:id="@+id/imgapagarLivro"
+                />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+            </LinearLayout>
+
+            <Button
+                android:layout_width="100dp"
+                android:layout_height="50dp"
+                android:layout_marginTop="200dp"
+                android:text="Leu"
+                android:id="@+id/btnLeu"/>
+
         </LinearLayout>
 
-
-
     </android.support.v7.widget.CardView>
-
 
 </LinearLayout>
